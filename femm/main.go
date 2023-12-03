@@ -1,9 +1,12 @@
 package main
 
 import (
+	"example/museum/api"
+	"example/museum/data"
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
-	"text/template"
 )
 
 func handleHello(res http.ResponseWriter, req *http.Request) {
@@ -11,18 +14,19 @@ func handleHello(res http.ResponseWriter, req *http.Request) {
 }
 
 func handleTemplate(w http.ResponseWriter, r *http.Request) {
-	html, err := template.ParseFiles("templates/index.tmpl")
+	templ, err := template.ParseFiles("templates/index.tmpl")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal err"))
+		log.Fatal(err)
 	}
-	html.Execute(w, "Test")
+	err = templ.Execute(w, data.GetAll())
 }
 
 func main() {
 	server := http.NewServeMux()
 	server.HandleFunc("/hello", handleHello)
 	server.HandleFunc("/template", handleTemplate)
+	server.HandleFunc("/api/exhibitions", api.Get)
+	server.HandleFunc("/api/exhibitions/new", api.Post)
 
 	fs := http.FileServer(http.Dir("./public"))
 
